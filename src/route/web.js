@@ -14,7 +14,7 @@ let initWebRoutes = (app) => {
   router.get("/about", homeController.getAboutPage);
   router.get("/crud", homeController.getCRUD);
   router.post("/post-crud", homeController.postCRUD);
-//   router.post("/register", homeController.postCRUD);
+  //   router.post("/register", homeController.postCRUD);
   router.get("/get-crud", homeController.displayGetCRUD);
   router.get("/edit-crud", homeController.getEditCRUD);
   router.post("/put-crud", homeController.putCRUD);
@@ -70,7 +70,8 @@ let initWebRoutes = (app) => {
     specialtyController.createNewSpecialty
   );
   router.get("/api/get-all-specialty", specialtyController.getAllSpecialty);
-  router.get(
+  //#94
+  router.get( 
     "/api/get-detail-specialty-by-id",
     specialtyController.getDetailSpecialtyById
   );
