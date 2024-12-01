@@ -1,7 +1,7 @@
 import db from '../models/index'
 require('dotenv').config()
 import _ from 'lodash';
-import { asIs } from 'sequelize';
+import { Op } from 'sequelize';
 import emailService from './emailService';
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
@@ -483,22 +483,33 @@ let searchDoctorByName = (nameDoctor) => {
             } else {
                 const arrDoctor = []
                 const doctor = await db.User.findAll({
-                    where: {
-                        roleId: "R2",
-                        lastName: nameDoctor
-                    },
-                    attributes: {
-                        exclude: ['password', 'roleId', 'email', 'phonenumber', 'positionId', 'gender', 'address']
-                    },
-                    include: [
+                  where: {
+                    roleId: 'R2',
+                    [Op.or]: [
                         {
-                            model: db.Markdown,
-                            attributes: ['description']
+                            firstName: {
+                                [Op.like]: `%${nameDoctor}%`,
+                            },
                         },
+                        {
+                            lastName: {
+                              [Op.like]: `%${nameDoctor}%`,
+                            },
+                        }
                     ],
-                    raw: false,
-                    nest: true
-                })
+                  },
+                  attributes: {
+                    exclude: ['password', 'roleId', 'email', 'phonenumber', 'positionId', 'gender', 'address'],
+                  },
+                  include: [
+                    {
+                      model: db.Markdown,
+                      attributes: ['description'],
+                    },
+                  ],
+                  raw: false,
+                  nest: true,
+                });
                 if (!doctor) {
                     resolve({
                         errCode: -2,
