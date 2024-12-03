@@ -66,6 +66,9 @@ let postBookAppointment = (data) => {
         resolve({
           errCode: 0,
           errMessage: 'Save info patient succeed!',
+          data: {
+            user: user[0],
+          },
         });
       }
     } catch (e) {
@@ -232,10 +235,61 @@ let updatePatientStatus = (data) => {
   });
 };
 
+let getListPaitentByUserId = (ids) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!ids) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing parameter!',
+        });
+      } else {
+        const splitIds = await ids.toString().split(',');
+        let data = await db.Booking.findAll({
+          where: {
+            patientId: {
+              [Op.in]: splitIds.map(Number).filter((elem) => elem > 0),
+            },
+          },
+          include: [
+            {
+              model: db.User,
+              as: 'patientData',
+              attributes: ['email', 'firstName', 'lastName', 'address', 'gender'],
+              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+            },
+            {
+              model: db.Allcode,
+              as: 'timeTypeDataPatient',
+              attributes: ['valueEn', 'valueVi'],
+            },
+            {
+              model: db.User,
+              as: 'doctorData',
+              attributes: ['email', 'firstName', 'lastName', 'address', 'gender'],
+              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+            },
+          ],
+          raw: false,
+          nest: true,
+        });
+
+        resolve({
+          errCode: 0,
+          data: data,
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   postBookAppointment: postBookAppointment,
   postVerifyBookAppointment: postVerifyBookAppointment,
   resendBookingAppointment: resendBookingAppointment,
   getListPaitentForManage: getListPaitentForManage,
   updatePatientStatus: updatePatientStatus,
+  getListPaitentByUserId: getListPaitentByUserId,
 };

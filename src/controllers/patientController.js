@@ -52,9 +52,23 @@ let updatePatientStatus = async (req, res) => {
   }
 };
 
+let getListPaitentByUserId = async (req, res) => {
+  try {
+    let info = await patientService.getListPaitentByUserId(req.query.ids);
+    return res.status(200).json(info);
+  } catch (e) {
+    console.log(e);
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: 'Error from server!',
+    });
+  }
+};
+
 module.exports = {
   postBookAppointment: postBookAppointment,
   postVerifyBookAppointment: postVerifyBookAppointment,
   getListPaitentForManage: getListPaitentForManage,
   updatePatientStatus: updatePatientStatus,
+  getListPaitentByUserId: getListPaitentByUserId,
 };
