@@ -121,7 +121,7 @@ let resendBookingAppointment = () => {
       const date = formatDate(new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
       let data = await db.Booking.findAll({
         where: {
-          date: new Date(date).getTime(),
+          date: new Date(date).getTime() + new Date(date).getTimezoneOffset() * 60 * 1000,
         },
         include: [
           {
