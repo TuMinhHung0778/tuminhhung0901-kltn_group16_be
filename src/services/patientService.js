@@ -159,8 +159,83 @@ let resendBookingAppointment = () => {
   });
 };
 
+let getListPaitentForManage = (statusId, date) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!statusId || !date) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing parameter!',
+        });
+      } else {
+        let data = await db.Booking.findAll({
+          where: {
+            statusId: statusId,
+            date: date,
+          },
+          include: [
+            {
+              model: db.User,
+              as: 'patientData',
+              attributes: ['email', 'firstName', 'address', 'gender'],
+              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+            },
+            {
+              model: db.Allcode,
+              as: 'timeTypeDataPatient',
+              attributes: ['valueEn', 'valueVi'],
+            },
+          ],
+          raw: false,
+          nest: true,
+        });
+
+        resolve({
+          errCode: 0,
+          data: data,
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+let updatePatientStatus = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!data.id || !data.statusId) {
+        resolve({
+          errCode: 1,
+          errMessage: 'Missing required parameter!',
+        });
+      } else {
+        // Update patient status
+        let appointment = await db.Booking.findOne({
+          where: {
+            id: data.id,
+          },
+          raw: false,
+        });
+        if (appointment) {
+          appointment.statusId = data.statusId;
+          await appointment.save();
+        }
+        resolve({
+          errCode: 0,
+          errMessage: 'OK',
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   postBookAppointment: postBookAppointment,
   postVerifyBookAppointment: postVerifyBookAppointment,
   resendBookingAppointment: resendBookingAppointment,
+  getListPaitentForManage: getListPaitentForManage,
+  updatePatientStatus: updatePatientStatus,
 };
