@@ -119,7 +119,6 @@ let resendBookingAppointment = () => {
   return new Promise(async (resolve, reject) => {
     try {
       const date = formatDate(new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
-
       let data = await db.Booking.findAll({
         where: {
           date: new Date(date).getTime(),
@@ -140,7 +139,7 @@ let resendBookingAppointment = () => {
         raw: false,
         nest: true,
       });
-      console.log(data);
+
       if (data && data.length) {
         data.forEach(async (item) => {
           const doctor = await doctorService.getDetailDoctorById(item.doctorId);
