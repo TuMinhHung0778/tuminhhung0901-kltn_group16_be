@@ -80,6 +80,7 @@ let getDetailSpecialtyById = (inputId, location) => {
               },
               attributes: ["doctorId", "provinceId"],
             });
+            // data.doctorSpecialty = doctorSpecialty;
           } else {
             //find by location
             doctorSpecialty = await db.Doctor_Info.findAll({
@@ -90,10 +91,12 @@ let getDetailSpecialtyById = (inputId, location) => {
               attributes: ["doctorId", "provinceId"],
             });
           }
-          data.doctorSpecialty = doctorSpecialty;
-        } else data = {
-            
-        };
+          // data.doctorSpecialty = doctorSpecialty;
+          data = {
+            ...data.toJSON(),
+            doctorSpecialty,
+          };
+        } else data = {};
         resolve({
           errCode: 0,
           errMessage: "OK",
