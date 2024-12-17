@@ -6,6 +6,7 @@ import patientController from "../controllers/patientController";
 import specialtyController from "../controllers/specialtyController";
 import clinicController from "../controllers/clinicController";
 import handbookController from "../controllers/handbookController";
+import authController from "../controllers/authController";
 
 let router = express.Router();
 
@@ -93,6 +94,8 @@ let initWebRoutes = (app) => {
     "/api/get-detail-handbook-by-id",
     handbookController.getDetailHandbookById
   );
+
+  router.post('/api/auth/forgot-password', authController.handleForgotPassword);
 
   return app.use("/", router);
 };

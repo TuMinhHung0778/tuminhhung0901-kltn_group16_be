@@ -185,8 +185,52 @@ let resendEmailForPatient = async (dataSend) => {
   });
 };
 
+let getBodyHTMLEmailForgotPassword = (dataSend) => {
+  let result = '';
+  if (dataSend.language === 'vi') {
+    result = `
+        <h3>Xin chào ${dataSend?.name}</h3>
+        <p>Bạn có yêu cầu cập nhật lại mật khẩu tại phòng khám HealthCare và được chấp nhận.</p>
+        <p>Mật khẩu mới là: <strong>${dataSend?.password}</strong></p>
+        <div>Xin chân thành cảm ơn quý khách đã sử dụng dịch vụ tại HealthCare!</div>
+        `;
+  }
+  if (dataSend.language === 'en') {
+    result = `
+        <h3>Dear ${dataSend?.name}</h3>
+        <p>You request to reset password at HealthCare was approved.</p>
+        <p>New password: <strong>${dataSend?.password}</strong></p>
+        <div>Thank you very much for using the service at HealthCare!</div>
+        `;
+  }
+
+  return result;
+};
+
+let sendEmailForgotPassword = async (dataSend) => {
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_APP, // generated ethereal user
+      pass: process.env.EMAIL_APP_PASSWORD, // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail({
+    from: '"HealthCare 🥼 "lethanhloi22042001@gmail.com"', // sender address
+    to: dataSend.email, // list of receivers
+    subject: 'Cập nhật lại mật khẩu tại HealthCare', // Subject line
+    html: getBodyHTMLEmailForgotPassword(dataSend),
+  });
+};
+
 module.exports = {
   sendSimpleEmail: sendSimpleEmail,
   sendAttachment: sendAttachment,
   resendEmailForPatient: resendEmailForPatient,
+  sendEmailForgotPassword: sendEmailForgotPassword,
 };
