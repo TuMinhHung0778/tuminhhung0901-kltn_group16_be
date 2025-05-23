@@ -13,6 +13,7 @@ export function formatDate(date) {
 export function generatePassword() {
   const length = 8;
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&';
+  // the purpose is random password
   let retVal = '';
 
   for (let i = 0, n = charset.length; i < length; ++i) {

@@ -51,6 +51,7 @@ let handleUserLogin = (email, password) => {
             resolve(userData)
         } catch (e) {
             reject(e)
+            console.log(e);
         }
     })
 }

@@ -1,23 +1,32 @@
 import userSevices from '../services/userSevices' 
 
 let handleLogin = async (req, res) => {
-    let email = req.body.email
-    let password = req.body.password
+    console.log("=============");
+    try {
+        let email = req.body.email
+        let password = req.body.password
 
-    if(!email || !password) {
+        if(!email || !password) {
+            return res.status(500).json({
+                errCode: 1,
+                message: 'Missing inputs parameter!'
+            })
+        }
+
+        let userData = await userSevices.handleUserLogin(email,password)
+
+        return res.status(200).json({
+            errCode: userData.errCode,
+            message: userData.errMessage,
+            user: userData.user ? userData.user : {}
+        })
+    } catch (error) {
+        console.log(error);
         return res.status(500).json({
             errCode: 1,
-            message: 'Missing inputs parameter!'
+            message: 'Error from server!'
         })
-    }
-
-    let userData = await userSevices.handleUserLogin(email,password)
-
-    return res.status(200).json({
-        errCode: userData.errCode,
-        message: userData.errMessage,
-        user: userData.user ? userData.user : {}
-    })
+    }   
 }
 
 let handleGetAllUsers = async (req, res) => {

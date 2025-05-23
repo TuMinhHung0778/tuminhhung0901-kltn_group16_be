@@ -1,10 +1,10 @@
-require('dotenv').config();
-import { Op } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
-import db from '../models/index';
-import emailService from './emailService';
-import doctorService from './doctorSevices';
-import { formatDate } from '../utils';
+require("dotenv").config();
+import { Op } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
+import db from "../models/index";
+import emailService from "./emailService";
+import doctorService from "./doctorSevices";
+import { formatDate } from "../utils";
 
 let buildUrlEmail = (doctorId, token) => {
   let result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${doctorId}`;
@@ -25,7 +25,7 @@ let postBookAppointment = (data) => {
       ) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing parameter!',
+          errMessage: "Missing parameter!",
         });
       } else {
         //Gửi Email xác thực
@@ -43,17 +43,18 @@ let postBookAppointment = (data) => {
           where: { email: data.email },
           defaults: {
             email: data.email,
-            roleId: 'R3',
+            roleId: "R3",
             gender: data.selectedGender,
             address: data.address,
             firstName: data.fullName,
           },
         });
+        console.log(user);
         if (user && user[0]) {
           await db.Booking.findOrCreate({
-            where: { patientId: user[0].id },
+            where: { patientId: user[0].id, doctorId: data.doctorId, date: data.date, timeType: data.timeType }, 
             defaults: {
-              statusId: 'S1',
+              statusId: "S1",
               doctorId: data.doctorId,
               patientId: user[0].id,
               date: data.date,
@@ -65,7 +66,7 @@ let postBookAppointment = (data) => {
 
         resolve({
           errCode: 0,
-          errMessage: 'Save info patient succeed!',
+          errMessage: "Save info patient succeed!",
           data: {
             user: user[0],
           },
@@ -83,29 +84,29 @@ let postVerifyBookAppointment = (data) => {
       if (!data.token || !data.doctorId) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing parameter!',
+          errMessage: "Missing parameter!",
         });
       } else {
         let appointment = await db.Booking.findOne({
           where: {
             doctorId: data.doctorId,
             token: data.token,
-            statusId: 'S1',
+            statusId: "S1",
           },
           raw: false,
         });
 
         if (appointment) {
-          appointment.statusId = 'S2';
+          appointment.statusId = "S2";
           await appointment.save();
           resolve({
             errCode: 0,
-            errMessage: 'Update appointment succeed!',
+            errMessage: "Update appointment succeed!",
           });
         } else {
           resolve({
             errCode: 2,
-            errMessage: 'Appointment has been activated or does not exist!',
+            errMessage: "Appointment has been activated or does not exist!",
           });
         }
       }
@@ -118,39 +119,56 @@ let postVerifyBookAppointment = (data) => {
 let resendBookingAppointment = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      const date = formatDate(new Date(new Date().getTime() + 24 * 60 * 60 * 1000));
+      //date => xác định ngày mai
+      const date = formatDate(
+        new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+      );
+      //data => Truy vấn danh sách lịch hẹn
       let data = await db.Booking.findAll({
+        //where :  tìm các lịch hẹn trùng với const date
         where: {
-          date: new Date(date).getTime() + new Date(date).getTimezoneOffset() * 60 * 1000,
+          date:
+            new Date(date).getTime() +
+            new Date(date).getTimezoneOffset() * 60 * 1000,
         },
         include: [
           {
             model: db.User,
-            as: 'patientData',
-            attributes: ['email', 'firstName', 'address', 'gender'],
-            include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+            as: "patientData",
+            attributes: ["email", "firstName", "address", "gender"],
+            include: [
+              {
+                model: db.Allcode,
+                as: "genderData",
+                attributes: ["valueEn", "valueVi"],
+              },
+            ],
           },
           {
             model: db.Allcode,
-            as: 'timeTypeDataPatient',
-            attributes: ['valueEn', 'valueVi'],
+            as: "timeTypeDataPatient",
+            attributes: ["valueEn", "valueVi"],
           },
         ],
         raw: false,
         nest: true,
       });
-
       if (data && data.length) {
         data.forEach(async (item) => {
+          //doctor =>Lấy thông tin bác sĩ
           const doctor = await doctorService.getDetailDoctorById(item.doctorId);
           await emailService.resendEmailForPatient({
             email: item?.patientData?.email,
             patientName: item?.patientData?.firstName,
-            time: `${item?.timeTypeDataPatient?.valueVi} - Ngày mai - ${date.replaceAll('-', '/')}`,
+            time: `${item?.timeTypeDataPatient?.valueVi
+              } - Ngày mai - ${date.replaceAll("-", "/")}`,
             doctorName: `${doctor?.data?.firstName} ${doctor?.data?.lastName}`,
-            language: 'vi',
+            language: "vi",
             status: item?.statusId,
-            redirectLink: item?.statusId === 'S1' ? buildUrlEmail(item?.doctorId, item?.token) : '',
+            redirectLink:
+              item?.statusId === "S1"
+                ? buildUrlEmail(item?.doctorId, item?.token)
+                : "",
           });
         });
       }
@@ -166,7 +184,7 @@ let getListPaitentForManage = (statusId, date) => {
       if (!statusId || !date) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing parameter!',
+          errMessage: "Missing parameter!",
         });
       } else {
         let data = await db.Booking.findAll({
@@ -177,14 +195,20 @@ let getListPaitentForManage = (statusId, date) => {
           include: [
             {
               model: db.User,
-              as: 'patientData',
-              attributes: ['email', 'firstName', 'address', 'gender'],
-              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+              as: "patientData",
+              attributes: ["email", "firstName", "address", "gender"],
+              include: [
+                {
+                  model: db.Allcode,
+                  as: "genderData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+              ],
             },
             {
               model: db.Allcode,
-              as: 'timeTypeDataPatient',
-              attributes: ['valueEn', 'valueVi'],
+              as: "timeTypeDataPatient",
+              attributes: ["valueEn", "valueVi"],
             },
           ],
           raw: false,
@@ -208,7 +232,7 @@ let updatePatientStatus = (data) => {
       if (!data.id || !data.statusId) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing required parameter!',
+          errMessage: "Missing required parameter!",
         });
       } else {
         // Update patient status
@@ -224,7 +248,7 @@ let updatePatientStatus = (data) => {
         }
         resolve({
           errCode: 0,
-          errMessage: 'OK',
+          errMessage: "OK",
         });
       }
     } catch (e) {
@@ -239,10 +263,10 @@ let getListPaitentByUserId = (ids) => {
       if (!ids) {
         resolve({
           errCode: 1,
-          errMessage: 'Missing parameter!',
+          errMessage: "Missing parameter!",
         });
       } else {
-        const splitIds = await ids.toString().split(',');
+        const splitIds = await ids.toString().split(",");
         let data = await db.Booking.findAll({
           where: {
             patientId: {
@@ -252,26 +276,49 @@ let getListPaitentByUserId = (ids) => {
           include: [
             {
               model: db.User,
-              as: 'patientData',
-              attributes: ['email', 'firstName', 'lastName', 'address', 'gender'],
-              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+              as: "patientData",
+              attributes: [
+                "email",
+                "firstName",
+                "lastName",
+                "address",
+                "gender",
+              ],
+              include: [
+                {
+                  model: db.Allcode,
+                  as: "genderData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+              ],
             },
             {
               model: db.Allcode,
-              as: 'timeTypeDataPatient',
-              attributes: ['valueEn', 'valueVi'],
+              as: "timeTypeDataPatient",
+              attributes: ["valueEn", "valueVi"],
             },
             {
               model: db.User,
-              as: 'doctorData',
-              attributes: ['email', 'firstName', 'lastName', 'address', 'gender'],
-              include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }],
+              as: "doctorData",
+              attributes: [
+                "email",
+                "firstName",
+                "lastName",
+                "address",
+                "gender",
+              ],
+              include: [
+                {
+                  model: db.Allcode,
+                  as: "genderData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+              ],
             },
           ],
           raw: false,
           nest: true,
         });
-
         resolve({
           errCode: 0,
           data: data,

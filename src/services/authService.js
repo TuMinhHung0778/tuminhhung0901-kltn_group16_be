@@ -17,7 +17,7 @@ const handleForgotPassword = (email) => {
         });
       }
 
-      const newPassword = generatePassword();
+      const newPassword = generatePassword(); // the purpose is random password has 8 char
       // Send mail
       await emailService.sendEmailForgotPassword({
         language: 'vi',

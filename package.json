@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "core-js": "^3.41.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
@@ -30,5 +32,13 @@
     "@babel/preset-env": "^7.12.10",
     "nodemon": "^2.0.7",
     "sequelize-cli": "^6.5.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lethanhloi22042001/DATN_Group13_BE.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lethanhloi22042001/DATN_Group13_BE/issues"
+  },
+  "homepage": "https://github.com/lethanhloi22042001/DATN_Group13_BE#readme"
 }
